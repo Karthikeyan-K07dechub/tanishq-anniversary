@@ -168,6 +168,7 @@ select {
 .mobile-home-title {
   width: min(100%, 300px);
   margin: 0;
+  position: relative;
   font-family: "Italianno", cursive;
   font-size: clamp(28px, 8vw, 32px);
   font-weight: 400;
@@ -292,6 +293,8 @@ select {
 .mobile-video-title {
   width: min(100%, 300px);
   margin: 0;
+  position:relative;
+  top:20px;
   font-family: "Italianno", cursive;
   font-size: clamp(28px, 8vw, 32px);
   font-weight: 400;
@@ -454,6 +457,8 @@ select {
   gap: 12px;
   width: min(100%, 260px);
   margin-top: -4px;
+  position:relative;
+  bottom:15px;
 }
 
 .mobile-video-small-button,
