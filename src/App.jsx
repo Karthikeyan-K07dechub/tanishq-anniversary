@@ -1,14 +1,99 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import "@fontsource/italiana";
 import "@fontsource/italianno";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import landingBackground from "../landing-page-image-2.png";
-import mobileVideoContainerBackground from "../mobile-page-container-bc-image-3.png";
 import mobileVideoFrameOverlay from "../mobile-page-container-bc-image-3.png";
 import mobileContainerBackground from "../mobile-page-container-bc-image.png";
 import mobilePageBackground from "../mobile-page-bc-image.png";
 import qrBackground from "../qr-page-image.png";
 import qrImage from "../qr.png";
+
+const MOBILE_DRAFT_STORAGE_KEY = "tanishq-mobile-draft";
+
+const SubmissionContext = createContext(null);
+
+function readStoredDraft() {
+  if (typeof window === "undefined") {
+    return { guestName: "", personalizedMessage: "" };
+  }
+
+  try {
+    const storedDraft = window.localStorage.getItem(MOBILE_DRAFT_STORAGE_KEY);
+    if (!storedDraft) {
+      return { guestName: "", personalizedMessage: "" };
+    }
+
+    const parsedDraft = JSON.parse(storedDraft);
+
+    return {
+      guestName: parsedDraft.guestName || "",
+      personalizedMessage: parsedDraft.personalizedMessage || "",
+    };
+  } catch {
+    return { guestName: "", personalizedMessage: "" };
+  }
+}
+
+function SubmissionProvider({ children }) {
+  const [draft, setDraft] = useState(() => readStoredDraft());
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(MOBILE_DRAFT_STORAGE_KEY, JSON.stringify(draft));
+  }, [draft]);
+
+  return (
+    <SubmissionContext.Provider value={{ draft, setDraft }}>
+      {children}
+    </SubmissionContext.Provider>
+  );
+}
+
+function useSubmissionDraft() {
+  const context = useContext(SubmissionContext);
+
+  if (!context) {
+    throw new Error("useSubmissionDraft must be used inside SubmissionProvider.");
+  }
+
+  return context;
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Failed to read file payload."));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function submitSubmission(payload) {
+  const response = await fetch("/api/submissions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorPayload = await response.json().catch(() => ({}));
+    throw new Error(errorPayload.error || "Unable to submit this greeting.");
+  }
+
+  return response.json();
+}
 
 function ScreenPage({ className = "", children, background }) {
   const classes = ["screen-page", className].filter(Boolean).join(" ");
@@ -53,6 +138,14 @@ function QrPage() {
 
 function MobileHomePage() {
   const navigate = useNavigate();
+  const { draft, setDraft } = useSubmissionDraft();
+
+  function updateDraft(field, value) {
+    setDraft((currentDraft) => ({
+      ...currentDraft,
+      [field]: value,
+    }));
+  }
 
   return (
     <ScreenPage background={mobilePageBackground} className="mobile-home-page">
@@ -80,6 +173,8 @@ function MobileHomePage() {
                   type="text"
                   name="guestName"
                   placeholder="Enter your name"
+                  value={draft.guestName}
+                  onChange={(event) => updateDraft("guestName", event.target.value)}
                 />
               </label>
 
@@ -90,6 +185,10 @@ function MobileHomePage() {
                   name="message"
                   placeholder="Write your message"
                   rows="3"
+                  value={draft.personalizedMessage}
+                  onChange={(event) =>
+                    updateDraft("personalizedMessage", event.target.value)
+                  }
                 />
               </label>
             </div>
@@ -125,6 +224,7 @@ function MobileHomePage() {
 }
 
 function MobileVideoPage() {
+  const { draft } = useSubmissionDraft();
   const liveVideoRef = useRef(null);
   const playbackVideoRef = useRef(null);
   const recorderRef = useRef(null);
@@ -134,9 +234,7 @@ function MobileVideoPage() {
   const [previewMode, setPreviewMode] = useState("idle");
   const [recordedUrl, setRecordedUrl] = useState("");
   const [recordedBlob, setRecordedBlob] = useState(null);
-  const [statusMessage, setStatusMessage] = useState(
-    "Tap record to allow camera and microphone access."
-  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -190,14 +288,12 @@ function MobileVideoPage() {
       !navigator.mediaDevices?.getUserMedia ||
       typeof MediaRecorder === "undefined"
     ) {
-      setStatusMessage("This browser does not support in-browser video recording.");
       return;
     }
 
     if (recordingState === "recording" && recorderRef.current) {
       recorderRef.current.stop();
       setRecordingState("processing");
-      setStatusMessage("Finishing your video...");
       return;
     }
 
@@ -236,27 +332,21 @@ function MobileVideoPage() {
         setRecordedUrl(nextUrl);
         setPreviewMode("recorded");
         setRecordingState("ready");
-        setStatusMessage("Recording complete. Use Preview or Submit.");
       });
 
       recorder.start();
       setRecordingState("recording");
-      setStatusMessage("Recording in progress. Tap again to stop.");
-    } catch (error) {
-      setStatusMessage(
-        "Camera or microphone permission was denied, or the device is unavailable."
-      );
+    } catch {
+      setRecordingState("idle");
     }
   }
 
   async function handlePreviewClick() {
     if (!recordedUrl) {
-      setStatusMessage("Record a video first to preview it.");
       return;
     }
 
     setPreviewMode("recorded");
-    setStatusMessage("Previewing your recorded video.");
 
     if (playbackVideoRef.current) {
       playbackVideoRef.current.currentTime = 0;
@@ -265,41 +355,33 @@ function MobileVideoPage() {
   }
 
   async function handleSubmitClick() {
-    if (!recordedBlob || !recordedUrl) {
-      setStatusMessage("Record a video first before submitting.");
+    if (!recordedBlob || !recordedUrl || isSubmitting) {
       return;
     }
 
     const extension = recordedBlob.type.includes("mp4") ? "mp4" : "webm";
     const fileName = `tanishq-video-${Date.now()}.${extension}`;
 
-    if (navigator.canShare && navigator.share) {
-      try {
-        const file = new File([recordedBlob], fileName, {
-          type: recordedBlob.type || "video/webm",
-        });
+    setIsSubmitting(true);
 
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: "Tanishq Anniversary Video",
-            text: "My Tanishq 30 years greeting video",
-          });
-          setStatusMessage("Video shared successfully.");
-          return;
-        }
-      } catch (error) {
-        setStatusMessage("Share was cancelled. Downloading the video instead.");
-      }
+    try {
+      const dataUrl = await blobToDataUrl(recordedBlob);
+
+      await submitSubmission({
+        name: draft.guestName.trim(),
+        landingMessage: draft.personalizedMessage.trim(),
+        pageType: "video",
+        pagePayload: {
+          video: {
+            fileName,
+            mimeType: recordedBlob.type || "video/webm",
+            dataUrl,
+          },
+        },
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const anchor = document.createElement("a");
-    anchor.href = recordedUrl;
-    anchor.download = fileName;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    setStatusMessage("Video downloaded successfully.");
   }
 
   return (
@@ -345,10 +427,10 @@ function MobileVideoPage() {
               type="button"
               className="mobile-video-record-button"
               onClick={handleRecordClick}
+              disabled={isSubmitting}
             >
               {recordingState === "recording" ? "Stop recording" : "Record your video"}
             </button>
-            <p className="mobile-video-status">{statusMessage}</p>
           </div>
         </section>
 
@@ -357,6 +439,7 @@ function MobileVideoPage() {
             type="button"
             className="mobile-video-small-button"
             onClick={handlePreviewClick}
+            disabled={isSubmitting}
           >
             Preview
           </button>
@@ -364,8 +447,9 @@ function MobileVideoPage() {
             type="button"
             className="mobile-video-small-button mobile-video-small-button-edit"
             onClick={handleSubmitClick}
+            disabled={isSubmitting}
           >
-            Submit
+            {isSubmitting ? "Sending..." : "Submit"}
           </button>
         </div>
       </div>
@@ -374,11 +458,13 @@ function MobileVideoPage() {
 }
 
 function MobilePhotoPage() {
+  const { draft } = useSubmissionDraft();
   const liveVideoRef = useRef(null);
   const streamRef = useRef(null);
   const [photoUrl, setPhotoUrl] = useState("");
   const [photoFile, setPhotoFile] = useState(null);
   const [photoMode, setPhotoMode] = useState("idle");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -428,7 +514,7 @@ function MobilePhotoPage() {
   }
 
   async function handlePhotoClick() {
-    if (!navigator.mediaDevices?.getUserMedia) {
+    if (!navigator.mediaDevices?.getUserMedia || isSubmitting) {
       return;
     }
 
@@ -480,37 +566,30 @@ function MobilePhotoPage() {
   }
 
   async function handlePhotoSubmit() {
-    if (!photoFile || !photoUrl) {
+    if (!photoFile || !photoUrl || isSubmitting) {
       return;
     }
 
-    const extension = photoFile.type.includes("png") ? "png" : "jpg";
-    const fileName = `tanishq-photo-${Date.now()}.${extension}`;
-    const shareFile = new File([photoFile], fileName, {
-      type: photoFile.type || "image/jpeg",
-    });
+    setIsSubmitting(true);
 
-    if (navigator.canShare && navigator.share) {
-      try {
-        if (navigator.canShare({ files: [shareFile] })) {
-          await navigator.share({
-            files: [shareFile],
-            title: "Tanishq Anniversary Photo",
-            text: "My Tanishq 30 years greeting photo",
-          });
-          return;
-        }
-      } catch (error) {
-        // Fall back to download if share is cancelled or unavailable.
-      }
+    try {
+      const dataUrl = await blobToDataUrl(photoFile);
+
+      await submitSubmission({
+        name: draft.guestName.trim(),
+        landingMessage: draft.personalizedMessage.trim(),
+        pageType: "photo",
+        pagePayload: {
+          photo: {
+            fileName: photoFile.name,
+            mimeType: photoFile.type || "image/jpeg",
+            dataUrl,
+          },
+        },
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const anchor = document.createElement("a");
-    anchor.href = photoUrl;
-    anchor.download = fileName;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
   }
 
   return (
@@ -554,6 +633,7 @@ function MobilePhotoPage() {
               type="button"
               className="mobile-video-record-button"
               onClick={handlePhotoClick}
+              disabled={isSubmitting}
             >
               {photoMode === "live" ? "Capture image" : "Click image"}
             </button>
@@ -569,6 +649,7 @@ function MobilePhotoPage() {
                 setPhotoMode("captured");
               }
             }}
+            disabled={isSubmitting}
           >
             Preview
           </button>
@@ -576,8 +657,9 @@ function MobilePhotoPage() {
             type="button"
             className="mobile-video-small-button mobile-video-small-button-edit"
             onClick={handlePhotoSubmit}
+            disabled={isSubmitting}
           >
-            Submit
+            {isSubmitting ? "Sending..." : "Submit"}
           </button>
         </div>
       </div>
@@ -586,6 +668,33 @@ function MobilePhotoPage() {
 }
 
 function MobileMessagePage() {
+  const { draft } = useSubmissionDraft();
+  const [messageText, setMessageText] = useState("");
+  const [messagePreview, setMessagePreview] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleMessageSubmit() {
+    const trimmedMessage = messageText.trim();
+    if (!trimmedMessage || isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await submitSubmission({
+        name: draft.guestName.trim(),
+        landingMessage: draft.personalizedMessage.trim(),
+        pageType: "message",
+        pagePayload: {
+          wishText: trimmedMessage,
+        },
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <ScreenPage background={mobilePageBackground} className="mobile-message-page">
       <div className="mobile-shell">
@@ -596,26 +705,55 @@ function MobileMessagePage() {
         </h1>
 
         <section className="mobile-video-card">
-          <img
-            className="mobile-video-card-background"
-            src={mobileVideoContainerBackground}
-            alt=""
-            aria-hidden="true"
-          />
-
           <div className="mobile-video-card-content">
-            <button type="button" className="mobile-video-record-button">
+            <div className="mobile-video-preview-shell mobile-message-preview-shell">
+              {messagePreview ? (
+                <div className="mobile-message-preview-text">
+                  {messageText.trim() || "Your message preview will appear here"}
+                </div>
+              ) : (
+                <textarea
+                  className="mobile-message-input"
+                  value={messageText}
+                  onChange={(event) => setMessageText(event.target.value)}
+                  placeholder="Write your wishes for Tanishq here"
+                  rows="10"
+                />
+              )}
+            </div>
+            <img
+              className="mobile-video-card-overlay"
+              src={mobileVideoFrameOverlay}
+              alt=""
+              aria-hidden="true"
+            />
+            <button
+              type="button"
+              className="mobile-video-record-button"
+              onClick={() => setMessagePreview(false)}
+              disabled={isSubmitting}
+            >
               Write message
             </button>
           </div>
         </section>
 
         <div className="mobile-video-footer-actions">
-          <button type="button" className="mobile-video-small-button">
+          <button
+            type="button"
+            className="mobile-video-small-button"
+            onClick={() => setMessagePreview(true)}
+            disabled={isSubmitting}
+          >
             Preview
           </button>
-          <button type="button" className="mobile-video-small-button mobile-video-small-button-edit">
-            Submit
+          <button
+            type="button"
+            className="mobile-video-small-button mobile-video-small-button-edit"
+            onClick={handleMessageSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Sending..." : "Submit"}
           </button>
         </div>
       </div>
@@ -623,7 +761,7 @@ function MobileMessagePage() {
   );
 }
 
-export default function App() {
+function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
@@ -634,5 +772,13 @@ export default function App() {
       <Route path="/mobile/video" element={<MobileVideoPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+  );
+}
+
+export default function App() {
+  return (
+    <SubmissionProvider>
+      <AppRoutes />
+    </SubmissionProvider>
   );
 }
