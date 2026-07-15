@@ -399,7 +399,7 @@ function MobilePhotoPage() {
 
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
-        facingMode: "environment",
+        facingMode: "user",
         width: { ideal: 720 },
         height: { ideal: 1280 },
       },
