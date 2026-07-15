@@ -128,26 +128,26 @@ select {
 }
 
 .mobile-home-page {
-  background-size: cover;
-  background-position: center;
+  background-size: 100% 100%;
+  background-position: center top;
   overflow-y: auto;
 }
 
 .mobile-video-page {
-  background-size: cover;
-  background-position: center;
+  background-size: 100% 100%;
+  background-position: center top;
   overflow-y: auto;
 }
 
 .mobile-photo-page {
-  background-size: cover;
-  background-position: center;
+  background-size: 100% 100%;
+  background-position: center top;
   overflow-y: auto;
 }
 
 .mobile-message-page {
-  background-size: cover;
-  background-position: center;
+  background-size: 100% 100%;
+  background-position: center top;
   overflow-y: auto;
 }
 
