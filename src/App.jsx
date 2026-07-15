@@ -4,6 +4,7 @@ import "@fontsource/italianno";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import landingBackground from "../landing-page-image-2.png";
 import mobileVideoContainerBackground from "../mobile-page-container-bc-image-2.png";
+import mobileVideoFrameOverlay from "../mobile-page-container-bc-image-3.png";
 import mobileContainerBackground from "../mobile-page-container-bc-image.png";
 import mobilePageBackground from "../mobile-page-bc-image.png";
 import qrBackground from "../qr-page-image.png";
@@ -311,13 +312,6 @@ function MobileVideoPage() {
         </h1>
 
         <section className="mobile-video-card">
-          <img
-            className="mobile-video-card-background"
-            src={mobileVideoContainerBackground}
-            alt=""
-            aria-hidden="true"
-          />
-
           <div className="mobile-video-card-content">
             <div className="mobile-video-preview-shell">
               <video
@@ -340,6 +334,12 @@ function MobileVideoPage() {
                 </div>
               ) : null}
             </div>
+            <img
+              className="mobile-video-card-overlay"
+              src={mobileVideoFrameOverlay}
+              alt=""
+              aria-hidden="true"
+            />
 
             <button
               type="button"
