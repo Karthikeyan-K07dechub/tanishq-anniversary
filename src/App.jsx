@@ -185,6 +185,8 @@ function QrPage() {
 function MobileHomePage() {
   const navigate = useNavigate();
   const { draft, setDraft } = useSubmissionDraft();
+  const hasRequiredDraftFields =
+    draft.guestName.trim() && draft.personalizedMessage.trim();
 
   function updateDraft(field, value) {
     setDraft((currentDraft) => ({
@@ -243,6 +245,7 @@ function MobileHomePage() {
               <button
                 type="button"
                 className="mobile-action-button"
+                disabled={!hasRequiredDraftFields}
                 onClick={() => navigate("/mobile/message")}
               >
                 Write my wishes to Tanishq for 30 years
@@ -250,6 +253,7 @@ function MobileHomePage() {
               <button
                 type="button"
                 className="mobile-action-button"
+                disabled={!hasRequiredDraftFields}
                 onClick={() => navigate("/mobile/photo")}
               >
                 Click my photo for Tanishq 30 years
@@ -257,6 +261,7 @@ function MobileHomePage() {
               <button
                 type="button"
                 className="mobile-action-button"
+                disabled={!hasRequiredDraftFields}
                 onClick={() => navigate("/mobile/video")}
               >
                 Record my wish for Tanishq 30 years

@@ -291,6 +291,14 @@ select {
   white-space: normal;
 }
 
+.mobile-action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow:
+    inset 0 0 8px rgba(255, 255, 255, 0.28),
+    0 6px 12px rgba(83, 25, 23, 0.1);
+}
+
 .mobile-action-button:focus-visible {
   outline: 2px solid rgba(255, 244, 214, 0.9);
   outline-offset: 2px;
