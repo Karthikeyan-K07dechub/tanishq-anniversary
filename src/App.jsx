@@ -8,12 +8,12 @@ import {
 import "@fontsource/italiana";
 import "@fontsource/italianno";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
-import landingBackground from "../landing-page-image-2.png";
-import mobileVideoFrameOverlay from "../mobile-page-container-bc-image-3.png";
-import mobileContainerBackground from "../mobile-page-container-bc-image.png";
-import mobilePageBackground from "../mobile-page-bc-image.png";
-import qrBackground from "../qr-page-image.png";
-import qrImage from "../qr.png";
+import landingBackground from "./assets/images/landing/landing-page-image-2.png";
+import mobileVideoFrameOverlay from "./assets/images/mobile/mobile-page-container-bc-image-3.png";
+import mobileContainerBackground from "./assets/images/mobile/mobile-page-container-bc-image.png";
+import mobilePageBackground from "./assets/images/mobile/mobile-page-bc-image.png";
+import qrBackground from "./assets/images/qr/qr-page-image.png";
+import qrImage from "./assets/images/qr/qr.png";
 
 const MOBILE_DRAFT_STORAGE_KEY = "tanishq-mobile-draft";
 const MOBILE_SUBMISSION_STORAGE_KEY = "tanishq-mobile-submission-id";
