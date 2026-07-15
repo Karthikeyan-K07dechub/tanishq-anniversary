@@ -362,6 +362,7 @@ select {
   position: absolute;
   bottom: 8.5%;
   left: 50%;
+  top:88%;
   width: 56.2%;
   min-height: 40px;
   border: 1px solid rgba(255, 255, 255, 0.72);
