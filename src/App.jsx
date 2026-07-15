@@ -224,6 +224,7 @@ function MobileHomePage() {
 }
 
 function MobileVideoPage() {
+  const navigate = useNavigate();
   const { draft } = useSubmissionDraft();
   const liveVideoRef = useRef(null);
   const playbackVideoRef = useRef(null);
@@ -379,6 +380,8 @@ function MobileVideoPage() {
           },
         },
       });
+
+      navigate("/mobile/consent");
     } finally {
       setIsSubmitting(false);
     }
@@ -458,6 +461,7 @@ function MobileVideoPage() {
 }
 
 function MobilePhotoPage() {
+  const navigate = useNavigate();
   const { draft } = useSubmissionDraft();
   const liveVideoRef = useRef(null);
   const streamRef = useRef(null);
@@ -587,6 +591,8 @@ function MobilePhotoPage() {
           },
         },
       });
+
+      navigate("/mobile/consent");
     } finally {
       setIsSubmitting(false);
     }
@@ -668,6 +674,7 @@ function MobilePhotoPage() {
 }
 
 function MobileMessagePage() {
+  const navigate = useNavigate();
   const { draft } = useSubmissionDraft();
   const [messageText, setMessageText] = useState("");
   const [messagePreview, setMessagePreview] = useState(false);
@@ -690,6 +697,8 @@ function MobileMessagePage() {
           wishText: trimmedMessage,
         },
       });
+
+      navigate("/mobile/consent");
     } finally {
       setIsSubmitting(false);
     }
@@ -761,6 +770,74 @@ function MobileMessagePage() {
   );
 }
 
+function MobileConsentPage() {
+  const navigate = useNavigate();
+
+  return (
+    <ScreenPage background={mobilePageBackground} className="mobile-consent-page">
+      <div className="mobile-shell mobile-consent-shell">
+        <section className="mobile-consent-card">
+          <div className="mobile-consent-inner">
+            <h1 className="mobile-consent-title">Consent form</h1>
+
+            <div className="mobile-consent-copy">
+              <p>
+                Thank you for your consent to utilize the testimonial provided
+                by you whether as text, video and/or pictorial content featuring
+                you and your experience at Tanishq store. We at Titan may use
+                the content in its entirety or in parts across any and all
+                mediums, platforms and media publishers and tag you on social
+                media handles for any posts. Your kind words about our
+                product/service mean a great deal to us, and we truly appreciate
+                your willingness to share your positive experience.
+              </p>
+              <p>
+                We understand that your time is valuable, and your trust in our
+                brand is something we hold in high regard. We greatly appreciate
+                your generosity in sharing your experience with our
+                products/services and granting us permission to showcase it to a
+                wider audience. Your willingness to provide your testimonial
+                without any charge further demonstrates your trust and loyalty
+                towards our brand, and we are truly humbled by your gesture.
+                Your support plays a crucial role in our success, and we are
+                grateful for the opportunity to showcase your satisfaction with
+                our offerings. Once again, thank you for your generosity in
+                permitting us to publish your testimonial on our social media
+                platforms. We assure you that we will continue to strive for
+                excellence and provide the highest level of satisfaction to all
+                our customers.
+              </p>
+              <p>We really value and cherish your association with us..!</p>
+              <p>
+                Regards
+                <br />
+                Tanishq Team
+              </p>
+            </div>
+
+            <div className="mobile-consent-actions">
+              <button
+                type="button"
+                className="mobile-consent-button"
+                onClick={() => navigate("/mobile", { replace: true })}
+              >
+                I acknowledge the consent
+              </button>
+              <button
+                type="button"
+                className="mobile-consent-button"
+                onClick={() => navigate("/mobile", { replace: true })}
+              >
+                Proceed without consent
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </ScreenPage>
+  );
+}
+
 function AppRoutes() {
   return (
     <Routes>
@@ -770,6 +847,7 @@ function AppRoutes() {
       <Route path="/mobile/message" element={<MobileMessagePage />} />
       <Route path="/mobile/photo" element={<MobilePhotoPage />} />
       <Route path="/mobile/video" element={<MobileVideoPage />} />
+      <Route path="/mobile/consent" element={<MobileConsentPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

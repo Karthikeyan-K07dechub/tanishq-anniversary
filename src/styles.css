@@ -151,6 +151,12 @@ select {
   overflow-y: auto;
 }
 
+.mobile-consent-page {
+  background-size: 100% 100%;
+  background-position: center top;
+  overflow-y: auto;
+}
+
 .mobile-shell {
   display: flex;
   flex-direction: column;
@@ -490,8 +496,74 @@ select {
   max-width: 90px;
 }
 
+.mobile-consent-shell {
+  padding-top: max(28px, env(safe-area-inset-top));
+}
+
+.mobile-consent-card {
+  width: min(100%, 330px);
+  min-height: 78svh;
+  box-shadow: inset 0 0 22px rgba(241, 210, 164, 0.18);
+}
+
+.mobile-consent-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100%;
+  padding: 24px 18px 34px;
+}
+
+.mobile-consent-title {
+  color: #17120d;
+  font-family: "Italiana", serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.21;
+  text-align: center;
+}
+
+.mobile-consent-copy {
+  width: min(100%, 255px);
+  color: #000000;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  line-height: 1.18;
+}
+
+.mobile-consent-copy p {
+  margin: 0 0 12px;
+}
+
+.mobile-consent-actions {
+  display: grid;
+  gap: 14px;
+  width: min(100%, 215px);
+  margin-top: auto;
+}
+
+.mobile-consent-button {
+  min-height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 24px;
+  background:
+    linear-gradient(90deg, rgb(214, 177, 123) 0%, rgb(244, 228, 188) 72%, rgb(255, 255, 255) 100%);
+  box-shadow:
+    inset 0 0 10px rgba(255, 255, 255, 0.42),
+    0 10px 20px rgba(83, 25, 23, 0.14);
+  color: #000000;
+  cursor: pointer;
+  font-family: "Italiana", serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.2;
+  padding: 10px 16px;
+  text-align: center;
+}
+
 .mobile-video-record-button:focus-visible,
-.mobile-video-small-button:focus-visible {
+.mobile-video-small-button:focus-visible,
+.mobile-consent-button:focus-visible {
   outline: 2px solid rgba(255, 244, 214, 0.9);
   outline-offset: 2px;
 }
