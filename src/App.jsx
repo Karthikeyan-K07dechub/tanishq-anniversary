@@ -149,7 +149,7 @@ function MobileHomePage() {
 
   return (
     <ScreenPage background={mobilePageBackground} className="mobile-home-page">
-      <div className="mobile-shell mobile-shell-home">
+      <div className="mobile-shell">
         <h1 className="mobile-home-title">
           Write my wishes to Tanishq
           <br />

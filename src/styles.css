@@ -128,26 +128,26 @@ select {
 }
 
 .mobile-home-page {
-  background-size: 100% 100%;
-  background-position: center top;
-  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  overflow-y: auto;
 }
 
 .mobile-video-page {
-  background-size: 100% 100%;
-  background-position: center top;
+  background-size: cover;
+  background-position: center;
   overflow-y: auto;
 }
 
 .mobile-photo-page {
-  background-size: 100% 100%;
-  background-position: center top;
+  background-size: cover;
+  background-position: center;
   overflow-y: auto;
 }
 
 .mobile-message-page {
-  background-size: 100% 100%;
-  background-position: center top;
+  background-size: cover;
+  background-position: center;
   overflow-y: auto;
 }
 
@@ -159,16 +159,10 @@ select {
   min-height: 100svh;
   margin: 0 auto;
   padding:
-    max(16px, env(safe-area-inset-top))
+    max(40px, env(safe-area-inset-top))
     14px
-    max(16px, env(safe-area-inset-bottom));
-  gap: clamp(10px, 2vh, 18px);
-}
-
-.mobile-shell-home {
-  height: 100svh;
-  justify-content: flex-start;
-  overflow: hidden;
+    max(28px, env(safe-area-inset-bottom));
+  gap: 18px;
 }
 
 .mobile-home-title {
@@ -176,7 +170,7 @@ select {
   margin: 0;
   color: #ffffff;
   font-family: "Italianno", cursive;
-  font-size: clamp(24px, 7vw, 32px);
+  font-size: clamp(28px, 8vw, 32px);
   font-weight: 400;
   line-height: 1;
   letter-spacing: 0;
@@ -185,11 +179,7 @@ select {
 
 .mobile-card {
   position: relative;
-  width: min(
-    100%,
-    370px,
-    calc((100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 112px) * 370 / 556)
-  );
+  width: min(100%, 370px);
   aspect-ratio: 370 / 556;
 }
 
@@ -525,20 +515,5 @@ select {
 
   .mobile-field-textarea {
     min-height: 46px;
-  }
-}
-
-@media (max-height: 740px) {
-  .mobile-home-title,
-  .mobile-video-title {
-    font-size: clamp(22px, 6.4vw, 28px);
-  }
-
-  .mobile-card {
-    width: min(
-      100%,
-      348px,
-      calc((100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 100px) * 370 / 556)
-    );
   }
 }
