@@ -37,7 +37,7 @@ select {
   overflow-y: hidden;
   background-position: center;
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: contain;
 }
 
 .screen-overlay {
