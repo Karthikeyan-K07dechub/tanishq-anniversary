@@ -3,7 +3,7 @@ import "@fontsource/italiana";
 import "@fontsource/italianno";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import landingBackground from "../landing-page-image-2.png";
-import mobileVideoContainerBackground from "../mobile-page-container-bc-image-2.png";
+import mobileVideoContainerBackground from "../mobile-page-container-bc-image-3.png";
 import mobileVideoFrameOverlay from "../mobile-page-container-bc-image-3.png";
 import mobileContainerBackground from "../mobile-page-container-bc-image.png";
 import mobilePageBackground from "../mobile-page-bc-image.png";
@@ -374,6 +374,145 @@ function MobileVideoPage() {
 }
 
 function MobilePhotoPage() {
+  const liveVideoRef = useRef(null);
+  const streamRef = useRef(null);
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoMode, setPhotoMode] = useState("idle");
+
+  useEffect(() => {
+    return () => {
+      if (photoUrl) {
+        URL.revokeObjectURL(photoUrl);
+      }
+
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [photoUrl]);
+
+  async function ensurePhotoStream() {
+    if (streamRef.current) {
+      return streamRef.current;
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: "environment",
+        width: { ideal: 720 },
+        height: { ideal: 1280 },
+      },
+      audio: false,
+    });
+
+    streamRef.current = stream;
+
+    if (liveVideoRef.current) {
+      liveVideoRef.current.srcObject = stream;
+      await liveVideoRef.current.play().catch(() => {});
+    }
+
+    return stream;
+  }
+
+  function stopPhotoStream() {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+
+    if (liveVideoRef.current) {
+      liveVideoRef.current.srcObject = null;
+    }
+  }
+
+  async function handlePhotoClick() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      return;
+    }
+
+    if (photoMode !== "live") {
+      await ensurePhotoStream();
+      setPhotoMode("live");
+      return;
+    }
+
+    if (!liveVideoRef.current) {
+      return;
+    }
+
+    const video = liveVideoRef.current;
+    const width = video.videoWidth || 720;
+    const height = video.videoHeight || 1280;
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      return;
+    }
+
+    context.drawImage(video, 0, 0, width, height);
+
+    const blob = await new Promise((resolve) => {
+      canvas.toBlob(resolve, "image/jpeg", 0.92);
+    });
+
+    if (!blob) {
+      return;
+    }
+
+    if (photoUrl) {
+      URL.revokeObjectURL(photoUrl);
+    }
+
+    const nextFile = new File([blob], `tanishq-photo-${Date.now()}.jpg`, {
+      type: "image/jpeg",
+    });
+
+    const nextUrl = URL.createObjectURL(nextFile);
+    setPhotoFile(nextFile);
+    setPhotoUrl(nextUrl);
+    setPhotoMode("captured");
+    stopPhotoStream();
+  }
+
+  async function handlePhotoSubmit() {
+    if (!photoFile || !photoUrl) {
+      return;
+    }
+
+    const extension = photoFile.type.includes("png") ? "png" : "jpg";
+    const fileName = `tanishq-photo-${Date.now()}.${extension}`;
+    const shareFile = new File([photoFile], fileName, {
+      type: photoFile.type || "image/jpeg",
+    });
+
+    if (navigator.canShare && navigator.share) {
+      try {
+        if (navigator.canShare({ files: [shareFile] })) {
+          await navigator.share({
+            files: [shareFile],
+            title: "Tanishq Anniversary Photo",
+            text: "My Tanishq 30 years greeting photo",
+          });
+          return;
+        }
+      } catch (error) {
+        // Fall back to download if share is cancelled or unavailable.
+      }
+    }
+
+    const anchor = document.createElement("a");
+    anchor.href = photoUrl;
+    anchor.download = fileName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+  }
+
   return (
     <ScreenPage background={mobilePageBackground} className="mobile-photo-page">
       <div className="mobile-shell">
@@ -384,25 +523,60 @@ function MobilePhotoPage() {
         </h1>
 
         <section className="mobile-video-card">
-          <img
-            className="mobile-video-card-background"
-            src={mobileVideoContainerBackground}
-            alt=""
-            aria-hidden="true"
-          />
-
           <div className="mobile-video-card-content">
-            <button type="button" className="mobile-video-record-button">
-              Click image
+            <div className="mobile-video-preview-shell mobile-photo-preview-shell">
+              <video
+                ref={liveVideoRef}
+                className={`mobile-video-preview ${photoMode === "live" ? "" : "mobile-video-preview-hidden"}`}
+                autoPlay
+                muted
+                playsInline
+              />
+              {photoMode === "captured" && photoUrl ? (
+                <img
+                  className="mobile-video-preview mobile-photo-preview"
+                  src={photoUrl}
+                  alt="Captured Tanishq greeting"
+                />
+              ) : photoMode === "idle" ? (
+                <div className="mobile-video-placeholder">
+                  Camera photo preview will appear here
+                </div>
+              ) : null}
+            </div>
+            <img
+              className="mobile-video-card-overlay"
+              src={mobileVideoFrameOverlay}
+              alt=""
+              aria-hidden="true"
+            />
+            <button
+              type="button"
+              className="mobile-video-record-button"
+              onClick={handlePhotoClick}
+            >
+              {photoMode === "live" ? "Capture image" : "Click image"}
             </button>
           </div>
         </section>
 
         <div className="mobile-video-footer-actions">
-          <button type="button" className="mobile-video-small-button">
+          <button
+            type="button"
+            className="mobile-video-small-button"
+            onClick={() => {
+              if (photoUrl) {
+                setPhotoMode("captured");
+              }
+            }}
+          >
             Preview
           </button>
-          <button type="button" className="mobile-video-small-button mobile-video-small-button-edit">
+          <button
+            type="button"
+            className="mobile-video-small-button mobile-video-small-button-edit"
+            onClick={handlePhotoSubmit}
+          >
             Submit
           </button>
         </div>
