@@ -16,6 +16,7 @@ import qrBackground from "../qr-page-image.png";
 import qrImage from "../qr.png";
 
 const MOBILE_DRAFT_STORAGE_KEY = "tanishq-mobile-draft";
+const MOBILE_SUBMISSION_STORAGE_KEY = "tanishq-mobile-submission-id";
 
 const SubmissionContext = createContext(null);
 
@@ -41,8 +42,21 @@ function readStoredDraft() {
   }
 }
 
+function readStoredSubmissionId() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  try {
+    return window.localStorage.getItem(MOBILE_SUBMISSION_STORAGE_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
 function SubmissionProvider({ children }) {
   const [draft, setDraft] = useState(() => readStoredDraft());
+  const [submissionId, setSubmissionId] = useState(() => readStoredSubmissionId());
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -52,8 +66,23 @@ function SubmissionProvider({ children }) {
     window.localStorage.setItem(MOBILE_DRAFT_STORAGE_KEY, JSON.stringify(draft));
   }, [draft]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (submissionId) {
+      window.localStorage.setItem(MOBILE_SUBMISSION_STORAGE_KEY, submissionId);
+      return;
+    }
+
+    window.localStorage.removeItem(MOBILE_SUBMISSION_STORAGE_KEY);
+  }, [submissionId]);
+
   return (
-    <SubmissionContext.Provider value={{ draft, setDraft }}>
+    <SubmissionContext.Provider
+      value={{ draft, setDraft, submissionId, setSubmissionId }}
+    >
       {children}
     </SubmissionContext.Provider>
   );
@@ -90,6 +119,23 @@ async function submitSubmission(payload) {
   if (!response.ok) {
     const errorPayload = await response.json().catch(() => ({}));
     throw new Error(errorPayload.error || "Unable to submit this greeting.");
+  }
+
+  return response.json();
+}
+
+async function updateSubmissionConsent(payload) {
+  const response = await fetch("/api/submissions", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorPayload = await response.json().catch(() => ({}));
+    throw new Error(errorPayload.error || "Unable to save consent choice.");
   }
 
   return response.json();
@@ -225,7 +271,7 @@ function MobileHomePage() {
 
 function MobileVideoPage() {
   const navigate = useNavigate();
-  const { draft } = useSubmissionDraft();
+  const { draft, setSubmissionId } = useSubmissionDraft();
   const liveVideoRef = useRef(null);
   const playbackVideoRef = useRef(null);
   const recorderRef = useRef(null);
@@ -368,7 +414,7 @@ function MobileVideoPage() {
     try {
       const dataUrl = await blobToDataUrl(recordedBlob);
 
-      await submitSubmission({
+      const submission = await submitSubmission({
         name: draft.guestName.trim(),
         landingMessage: draft.personalizedMessage.trim(),
         pageType: "video",
@@ -381,6 +427,7 @@ function MobileVideoPage() {
         },
       });
 
+      setSubmissionId(submission.submissionId || "");
       navigate("/mobile/consent");
     } finally {
       setIsSubmitting(false);
@@ -462,7 +509,7 @@ function MobileVideoPage() {
 
 function MobilePhotoPage() {
   const navigate = useNavigate();
-  const { draft } = useSubmissionDraft();
+  const { draft, setSubmissionId } = useSubmissionDraft();
   const liveVideoRef = useRef(null);
   const streamRef = useRef(null);
   const [photoUrl, setPhotoUrl] = useState("");
@@ -579,7 +626,7 @@ function MobilePhotoPage() {
     try {
       const dataUrl = await blobToDataUrl(photoFile);
 
-      await submitSubmission({
+      const submission = await submitSubmission({
         name: draft.guestName.trim(),
         landingMessage: draft.personalizedMessage.trim(),
         pageType: "photo",
@@ -592,6 +639,7 @@ function MobilePhotoPage() {
         },
       });
 
+      setSubmissionId(submission.submissionId || "");
       navigate("/mobile/consent");
     } finally {
       setIsSubmitting(false);
@@ -675,7 +723,7 @@ function MobilePhotoPage() {
 
 function MobileMessagePage() {
   const navigate = useNavigate();
-  const { draft } = useSubmissionDraft();
+  const { draft, setSubmissionId } = useSubmissionDraft();
   const [messageText, setMessageText] = useState("");
   const [messagePreview, setMessagePreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -689,7 +737,7 @@ function MobileMessagePage() {
     setIsSubmitting(true);
 
     try {
-      await submitSubmission({
+      const submission = await submitSubmission({
         name: draft.guestName.trim(),
         landingMessage: draft.personalizedMessage.trim(),
         pageType: "message",
@@ -698,6 +746,7 @@ function MobileMessagePage() {
         },
       });
 
+      setSubmissionId(submission.submissionId || "");
       navigate("/mobile/consent");
     } finally {
       setIsSubmitting(false);
@@ -772,6 +821,28 @@ function MobileMessagePage() {
 
 function MobileConsentPage() {
   const navigate = useNavigate();
+  const { submissionId, setSubmissionId } = useSubmissionDraft();
+  const [isSavingConsent, setIsSavingConsent] = useState(false);
+
+  async function handleConsentChoice(consentStatus) {
+    if (!submissionId || isSavingConsent) {
+      navigate("/mobile", { replace: true });
+      return;
+    }
+
+    setIsSavingConsent(true);
+
+    try {
+      await updateSubmissionConsent({
+        submissionId,
+        consentStatus,
+      });
+      setSubmissionId("");
+      navigate("/mobile", { replace: true });
+    } finally {
+      setIsSavingConsent(false);
+    }
+  }
 
   return (
     <ScreenPage background={mobilePageBackground} className="mobile-consent-page">
@@ -819,14 +890,16 @@ function MobileConsentPage() {
               <button
                 type="button"
                 className="mobile-consent-button"
-                onClick={() => navigate("/mobile", { replace: true })}
+                onClick={() => handleConsentChoice("accepted")}
+                disabled={isSavingConsent}
               >
                 I acknowledge the consent
               </button>
               <button
                 type="button"
                 className="mobile-consent-button"
-                onClick={() => navigate("/mobile", { replace: true })}
+                onClick={() => handleConsentChoice("declined")}
+                disabled={isSavingConsent}
               >
                 Proceed without consent
               </button>

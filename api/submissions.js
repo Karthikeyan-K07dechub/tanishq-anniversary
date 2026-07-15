@@ -54,13 +54,58 @@ async function saveMediaAsset(assetsDirectory, assetType, assetPayload) {
   };
 }
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
-    return res.status(405).json({ error: "Method not allowed." });
-  }
+async function readSubmissionRecord(submissionDirectory) {
+  const submissionFilePath = path.join(submissionDirectory, "submission.json");
+  const fileContents = await fs.readFile(submissionFilePath, "utf8");
+  return {
+    submissionFilePath,
+    record: JSON.parse(fileContents),
+  };
+}
 
+export default async function handler(req, res) {
   try {
+    const storageRoot = getStorageRoot();
+
+    if (req.method === "PATCH") {
+      const { submissionId = "", consentStatus = "" } = req.body || {};
+
+      if (!submissionId.trim()) {
+        return res.status(400).json({ error: "Missing submission ID." });
+      }
+
+      if (!["accepted", "declined"].includes(consentStatus)) {
+        return res.status(400).json({ error: "Invalid consent status." });
+      }
+
+      const submissionDirectory = path.join(storageRoot, submissionId.trim());
+      const { submissionFilePath, record } =
+        await readSubmissionRecord(submissionDirectory);
+
+      const updatedRecord = {
+        ...record,
+        consentStatus,
+        consentAt: new Date().toISOString(),
+      };
+
+      await fs.writeFile(
+        submissionFilePath,
+        JSON.stringify(updatedRecord, null, 2),
+        "utf8"
+      );
+
+      return res.status(200).json({
+        ok: true,
+        submissionId: submissionId.trim(),
+        consentStatus,
+      });
+    }
+
+    if (req.method !== "POST") {
+      res.setHeader("Allow", "POST, PATCH");
+      return res.status(405).json({ error: "Method not allowed." });
+    }
+
     const {
       name = "",
       landingMessage = "",
@@ -74,7 +119,6 @@ export default async function handler(req, res) {
 
     const submissionId = randomUUID();
     const submittedAt = new Date().toISOString();
-    const storageRoot = getStorageRoot();
     const submissionDirectory = path.join(storageRoot, submissionId);
     const assetsDirectory = path.join(submissionDirectory, "assets");
 
@@ -104,6 +148,8 @@ export default async function handler(req, res) {
         wishText: pagePayload.wishText?.trim() || "",
       },
       savedAssets,
+      consentStatus: "pending",
+      consentAt: null,
     };
 
     await fs.writeFile(
