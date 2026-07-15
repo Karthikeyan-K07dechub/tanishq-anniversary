@@ -128,8 +128,8 @@ select {
 }
 
 .mobile-home-page {
-  background-size: cover;
-  background-position: center;
+  background-size: 100% 100%;
+  background-position: center top;
   overflow-y: auto;
 }
 
