@@ -134,20 +134,20 @@ select {
 }
 
 .mobile-video-page {
-  background-size: cover;
-  background-position: center;
+  background-size: 100% 100%;
+  background-position: center top;
   overflow-y: auto;
 }
 
 .mobile-photo-page {
-  background-size: cover;
-  background-position: center;
+  background-size: 100% 100%;
+  background-position: center top;
   overflow-y: auto;
 }
 
 .mobile-message-page {
-  background-size: cover;
-  background-position: center;
+  background-size: 100% 100%;
+  background-position: center top;
   overflow-y: auto;
 }
 
@@ -292,7 +292,6 @@ select {
 .mobile-video-title {
   width: min(100%, 300px);
   margin: 0;
-  color: #ffffff;
   font-family: "Italianno", cursive;
   font-size: clamp(28px, 8vw, 32px);
   font-weight: 400;
@@ -495,7 +494,7 @@ select {
 @media (max-width: 420px) {
   .mobile-shell {
     width: 100%;
-    gap:0px;
+    gap:10px;
   }
 
   .mobile-card,
