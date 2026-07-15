@@ -17,7 +17,7 @@ body,
 }
 
 body {
-  min-width: 100vw;
+  min-width: 320px;
   background: #2d0710;
 }
 
@@ -33,10 +33,11 @@ select {
   min-height: 100vh;
   min-height: 100svh;
   width: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: hidden;
   background-position: center;
   background-repeat: no-repeat;
-  background-size:cover;
+  background-size: cover;
 }
 
 .screen-overlay {
@@ -129,54 +130,57 @@ select {
 .mobile-home-page {
   background-size: cover;
   background-position: center;
+  overflow-y: auto;
 }
 
 .mobile-video-page {
   background-size: cover;
   background-position: center;
+  overflow-y: auto;
 }
 
 .mobile-photo-page {
   background-size: cover;
   background-position: center;
+  overflow-y: auto;
 }
 
 .mobile-message-page {
   background-size: cover;
   background-position: center;
+  overflow-y: auto;
 }
 
 .mobile-shell {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: min(100%, 393px);
-  min-height: 100vh;
   min-height: 100svh;
   margin: 0 auto;
+  padding:
+    max(40px, env(safe-area-inset-top))
+    14px
+    max(28px, env(safe-area-inset-bottom));
+  gap: 18px;
 }
 
 .mobile-home-title {
-  position: absolute;
-  top: 82px;
-  left: 50%;
-  width: 260px;
+  width: min(100%, 300px);
   margin: 0;
   color: #ffffff;
   font-family: "Italianno", cursive;
-  font-size: 32px;
+  font-size: clamp(28px, 8vw, 32px);
   font-weight: 400;
   line-height: 1;
   letter-spacing: 0;
   text-align: center;
-  transform: translateX(-50%);
 }
 
 .mobile-card {
-  position: absolute;
-  top: 203px;
-  left: 50%;
-  width: 370px;
-  height: 556px;
-  transform: translateX(-50%);
+  position: relative;
+  width: min(100%, 370px);
+  aspect-ratio: 370 / 556;
 }
 
 .mobile-card-background {
@@ -184,6 +188,7 @@ select {
   inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
 .mobile-card-content {
@@ -195,9 +200,9 @@ select {
 
 .mobile-form {
   position: absolute;
-  top: 182px;
+  top: 32.75%;
   left: 50%;
-  width: 238.45px;
+  width: 64.45%;
   transform: translateX(-50%);
 }
 
@@ -214,7 +219,7 @@ select {
 .mobile-field-label {
   color: #000000;
   font-family: "Italiana", serif;
-  font-size: 12.72px;
+  font-size: clamp(11px, 3.2vw, 12.72px);
   font-weight: 400;
   line-height: 1.21;
   letter-spacing: 0;
@@ -228,7 +233,7 @@ select {
   background: rgba(255, 249, 238, 0.52);
   color: #1c1c1c;
   font-family: "Italiana", serif;
-  font-size: 12px;
+  font-size: clamp(11px, 3.05vw, 12px);
   line-height: 1.2;
   padding: 6px 8px;
 }
@@ -250,17 +255,17 @@ select {
 
 .mobile-actions {
   position: absolute;
-  top: 342px;
+  bottom: 10%;
   left: 50%;
   display: grid;
-  gap: 22px;
-  width: 238.45px;
+  gap: clamp(10px, 3vw, 18px);
+  width: 64.45%;
   transform: translateX(-50%);
 }
 
 .mobile-action-button {
-  width: 238.45px;
-  min-height: 34.74px;
+  width: 100%;
+  min-height: 36px;
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 17.35px;
   background:
@@ -271,16 +276,13 @@ select {
   color: #000000;
   cursor: pointer;
   font-family: "Italiana", serif;
-  font-size: 12.72px;
+  font-size: clamp(11px, 3.2vw, 12.72px);
   font-weight: 400;
-  line-height: 1.21;
+  line-height: 1.25;
   letter-spacing: 0;
-  padding: 9px 14px;
+  padding: 8px 12px;
   text-align: center;
-}
-
-.mobile-action-button:first-child {
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .mobile-action-button:focus-visible {
@@ -289,28 +291,21 @@ select {
 }
 
 .mobile-video-title {
-  position: absolute;
-  top: 55px;
-  left: 50%;
-  width: 260px;
+  width: min(100%, 300px);
   margin: 0;
   color: #ffffff;
   font-family: "Italianno", cursive;
-  font-size: 32px;
+  font-size: clamp(28px, 8vw, 32px);
   font-weight: 400;
   line-height: 1;
   letter-spacing: 0;
   text-align: center;
-  transform: translateX(-50%);
 }
 
 .mobile-video-card {
-  position: absolute;
-  top: 148px;
-  left: 50%;
-  width: 365px;
-  height: 559px;
-  transform: translateX(-50%);
+  position: relative;
+  width: min(100%, 365px);
+  aspect-ratio: 365 / 559;
 }
 
 .mobile-video-card-background {
@@ -318,6 +313,7 @@ select {
   inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
 .mobile-video-card-content {
@@ -329,10 +325,10 @@ select {
 
 .mobile-video-preview-shell {
   position: absolute;
-  top: 64px;
-  left: 49px;
-  width: 265px;
-  height: 323px;
+  top: 11.45%;
+  left: 13.45%;
+  width: 72.6%;
+  height: 57.8%;
   border-radius: 16px;
   overflow: hidden;
   background: rgba(255, 247, 235, 0.9);
@@ -364,10 +360,10 @@ select {
 
 .mobile-video-record-button {
   position: absolute;
-  top: 500px;
+  bottom: 8.5%;
   left: 50%;
-  width: 205.1px;
-  min-height: 43.58px;
+  width: 56.2%;
+  min-height: 40px;
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 21.79px;
   background:
@@ -378,7 +374,7 @@ select {
   color: #000000;
   cursor: pointer;
   font-family: "Italiana", serif;
-  font-size: 15.96px;
+  font-size: clamp(14px, 4vw, 15.96px);
   font-weight: 400;
   line-height: 1.21;
   letter-spacing: 0;
@@ -389,32 +385,34 @@ select {
 
 .mobile-video-status {
   position: absolute;
-  top: 470px;
+  top: 72%;
   left: 50%;
-  width: 250px;
+  width: 68%;
   margin: 0;
-  color: #f9e4c5;
+  color: rgba(89, 54, 40, 0.82);
   font-family: "Italiana", serif;
-  font-size: 12px;
+  font-size: clamp(10px, 2.9vw, 12px);
   line-height: 1.25;
   text-align: center;
   transform: translateX(-50%);
 }
 
 .mobile-video-footer-actions {
-  position: absolute;
-  top: 772px;
-  left: 50%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 215px;
-  transform: translateX(-50%);
+  justify-content: center;
+  gap: 12px;
+  width: min(100%, 260px);
+  margin-top: -4px;
+}
+
+.mobile-video-small-button,
+.mobile-video-small-button-edit {
+  flex: 1 1 0;
 }
 
 .mobile-video-small-button {
-  width: 114px;
-  min-height: 34px;
+  min-height: 36px;
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 17px;
   background:
@@ -425,16 +423,16 @@ select {
   color: #000000;
   cursor: pointer;
   font-family: "Italiana", serif;
-  font-size: 12.45px;
+  font-size: clamp(11px, 3.15vw, 12.45px);
   font-weight: 400;
   line-height: 1.21;
   letter-spacing: 0;
-  padding: 8px 16px;
+  padding: 8px 10px;
   text-align: center;
 }
 
 .mobile-video-small-button-edit {
-  width: 76px;
+  max-width: 90px;
 }
 
 .mobile-video-record-button:focus-visible,
@@ -448,32 +446,9 @@ select {
     width: 100%;
   }
 
-  .mobile-home-title {
-    top: 9.6vh;
-    width: 66.2%;
-    font-size: clamp(28px, 8.15vw, 32px);
-  }
-
-  .mobile-card {
-    top: 23.8vh;
-    width: calc(100% - 24px);
-    height: auto;
-    aspect-ratio: 370 / 556;
-  }
-
-  .mobile-form {
-    top: 32.7%;
-    left: 50%;
-    width: 64.45%;
-    transform: translateX(-50%);
-  }
-
-  .mobile-actions {
-    top: 61.5%;
-    left: 50%;
-    width: 64.45%;
-    gap: 12px;
-    transform: translateX(-50%);
+  .mobile-card,
+  .mobile-video-card {
+    width: calc(100% - 18px);
   }
 
   .mobile-field {
@@ -481,76 +456,12 @@ select {
     margin-bottom: 10px;
   }
 
-  .mobile-field-label {
-    font-size: clamp(11px, 3.2vw, 12.72px);
-  }
-
   .mobile-field-input {
     min-height: 26px;
-    font-size: clamp(11px, 3.05vw, 12px);
     padding: 5px 7px;
   }
 
   .mobile-field-textarea {
     min-height: 46px;
-  }
-
-  .mobile-action-button {
-    width: 100%;
-    min-height: 36px;
-    font-size: clamp(11px, 3.2vw, 12.72px);
-    padding: 8px 12px;
-  }
-
-  .mobile-video-title {
-    top: 6.45%;
-    width: 66.2%;
-    font-size: clamp(28px, 8.15vw, 32px);
-  }
-
-  .mobile-video-card {
-    top: 17.35%;
-    width: calc(100% - 28px);
-    height: auto;
-    aspect-ratio: 365 / 559;
-  }
-
-  .mobile-video-preview-shell {
-    top: 11.45%;
-    left: 13.45%;
-    width: 72.6%;
-    height: 57.8%;
-  }
-
-  .mobile-video-record-button {
-    top: 95.5%;
-    width: 56.2%;
-    min-height: 0;
-    height: 7.8%;
-    font-size: clamp(14px, 4.05vw, 15.96px);
-    padding: 0 14px;
-    transform: translate(-50%, -100%);
-  }
-
-  .mobile-video-status {
-    top: 81.5%;
-    width: 67%;
-    font-size: clamp(10px, 3vw, 12px);
-  }
-
-  .mobile-video-footer-actions {
-    top: 90.6%;
-    width: 54.7%;
-  }
-
-  .mobile-video-small-button {
-    width: 53%;
-    min-height: 34px;
-    font-size: clamp(11px, 3.15vw, 12.45px);
-    padding: 8px 10px;
-  }
-
-  .mobile-video-small-button-edit {
-    width: 35.5%;
   }
 }
