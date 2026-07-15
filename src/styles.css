@@ -370,8 +370,9 @@ select {
 }
 
 .mobile-video-record-button {
-  position: absolute;
-  bottom: 8.5%;
+  position: relative;
+  top:83%;
+  bottom: 6.8%;
   left: 50%;
   width: 56.2%;
   min-height: 40px;
@@ -396,18 +397,7 @@ select {
 }
 
 .mobile-video-status {
-  position: absolute;
-  top: 78.2%;
-  left: 50%;
-  width: 62%;
-  margin: 0;
-  color: rgba(89, 54, 40, 0.82);
-  font-family: "Italiana", serif;
-  font-size: clamp(10px, 2.9vw, 12px);
-  line-height: 1.25;
-  text-align: center;
-  transform: translateX(-50%);
-  z-index: 3;
+  display: none;
 }
 
 .mobile-video-footer-actions {
